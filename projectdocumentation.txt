@@ -1,0 +1,169 @@
+Pre-Requisites:
+1. Create Terraform Configuration for S3 Bucket and DynamoDB:
+Create a new Terraform file, e.g., pre-requisites.tf.
+Define configurations for S3 bucket and DynamoDB table.
+
+------------------------------------------------------------
+
+// pre-requisites.tf
+
+// S3 Bucket for Terraform state
+resource "aws_s3_bucket" "terraform_state" {
+  bucket = "your-unique-bucket-name"
+  acl    = "private"
+
+  versioning {
+    enabled = true
+  }
+}
+
+// DynamoDB Table for state locking
+resource "aws_dynamodb_table" "terraform_locks" {
+  name           = "terraform-locks-table"
+  read_capacity  = 5
+  write_capacity = 5
+  hash_key       = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
+
+------------------------------------------------------------
+
+2. Create VPC Configuration:
+Create a new Terraform file, e.g., vpc.tf.
+Define configurations for VPC, subnets, and other necessary network components.
+------------------------------------------------------------
+// vpc.tf
+
+// VPC Configuration
+resource "aws_vpc" "my_vpc" {
+  cidr_block          = "10.0.0.0/16"
+  enable_dns_support  = true
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "MyVPC"
+  }
+}
+
+// Create subnets, security groups, and other networking components as needed.
+------------------------------------------------------------
+
+3. Create Web Server Resources Configuration:
+Create a new Terraform file, e.g., 'web-server-resources.tf'.
+Define configurations for S3 bucket, SNS topic, IAM roles, golden AMI, Ansible playbook, and other necessary resources
+------------------------------------------------------------
+// web-server-resources.tf
+
+// S3 Bucket for web server configuration
+resource "aws_s3_bucket" "webserver_config" {
+  bucket = "webserver-config-bucket"
+  acl    = "private"
+}
+
+// SNS Topic for notifications
+resource "aws_sns_topic" "web_server_notifications" {
+  name        = "WebServerNotificationsTopic"
+  display_name = "Web Server Notifications Topic"
+}
+
+// IAM Role Configuration for Web Server
+resource "aws_iam_role" "web_server_role" {
+  name = "WebServerIAMRole"
+  // Add assume_role_policy and other necessary configurations
+}
+
+// IAM Policy Attachment for Web Server Role
+resource "aws_iam_role_policy_attachment" "web_server_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+  role       = aws_iam_role.web_server_role.name
+}
+
+// IAM Role and Policy Configuration for S3 and Session Manager
+resource "aws_iam_role" "s3_and_session_manager_role" {
+  name = "S3AndSessionManagerRole"
+  // Add assume_role_policy and other necessary configurations
+}
+
+// Add other resources like golden AMI, Ansible playbook, etc.
+------------------------------------------------------------
+Deployment:
+4. Create Auto Scaling Group, Load Balancer, and Scaling Policies Configuration:
+Create a new Terraform file, e.g., 'deployment.tf'.
+Define configurations for IAM role, launch configuration, auto scaling group, target group, ALB, CloudWatch alarms, and scaling policies.
+------------------------------------------------------------
+// deployment.tf
+
+// IAM Role granting PUT/GET access to S3 Bucket and Session Manager access
+resource "aws_iam_role" "deployment_role" {
+  name = "DeploymentRole"
+  // Add assume_role_policy and other necessary configurations
+}
+
+// Create Launch Configuration with userdata
+resource "aws_launch_configuration" "web_server_launch_config" {
+  name                 = "web_server_launch_config"
+  // Add launch configuration details including user_data
+}
+
+// Create Auto Scaling Group
+resource "aws_autoscaling_group" "web_server_asg" {
+  // Add auto scaling group configurations
+}
+
+// Create Target Group
+resource "aws_lb_target_group" "web_server_target_group" {
+  // Add target group configurations
+}
+
+// Create Application Load Balancer
+resource "aws_lb" "web_server_lb" {
+  // Add load balancer configurations
+}
+
+// Create CloudWatch Alarms
+resource "aws_cloudwatch_metric_alarm" "asg_alarm" {
+  // Add CloudWatch alarm configurations
+}
+
+// Create Scaling Policies
+resource "aws_autoscaling_policy" "scale_out_policy" {
+  // Add scaling out policy configurations
+}
+
+resource "aws_autoscaling_policy" "scale_in_policy" {
+  // Add scaling in policy configurations
+}
+------------------------------------------------------------
+5. Create DNS Configuration:
+Create a new Terraform file, e.g., 'dns.tf'.
+Define configurations for Route 53 record.
+------------------------------------------------------------
+// dns.tf
+
+// Create Alias Record in Hosted Zone
+resource "aws_route53_record" "web_server_dns" {
+  name    = "webserver.example.com"
+  type    = "A"
+  zone_id = "YOUR_HOSTED_ZONE_ID"
+
+  alias {
+    name                   = aws_lb.web_server_lb.dns_name
+    zone_id                = aws_lb.web_server_lb.zone_id
+    evaluate_target_health = true
+  }
+}
+------------------------------------------------------------
+Validation:
+6. Verify Resources:
+Run 'terraform init', 'terraform plan', and 'terraform apply' for each set of Terraform files.
+Validate the resources in the AWS Console.
+7. Access Web Application:
+Access the web application from a public internet browser using the provided domain name.
+Destroy:
+8. Destroy Resources:
+After testing, run 'terraform destroy' for each set of Terraform files to destroy the resources and save on billing.
+This is a general guide, and you may need to tailor it according to your specific requirements. Ensure you replace placeholder values with your actual AWS configuration details. Also, note that certain configurations like IAM roles, security groups, etc., may need additional details based on your use case.
