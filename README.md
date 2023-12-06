@@ -69,6 +69,6 @@ Destroy Resources:
 Once testing is complete, run Terraform IaC with terraform destroy for each set of Terraform files to destroy the resources and save on billing.
 
 
-
+Project reference : https://devopsrealtime.com/deploy-apache-web-server-using-terraform-iac/
 
 
