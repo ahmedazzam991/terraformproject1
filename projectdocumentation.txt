@@ -51,7 +51,62 @@ resource "aws_vpc" "my_vpc" {
 
 // Create subnets, security groups, and other networking components as needed.
 ------------------------------------------------------------
+# Create s3_backend.tf
 
+terraform {
+  backend "s3" {
+    bucket         = "azzamterraform991"
+    key            = "vpc/terraform.tfstate"
+    region         = "eu-north-1"
+    encrypt        = true
+    dynamodb_table = "azzam991991"
+  }
+}
+
+
+# Backend Configuration
+terraform {
+  backend "s3" {
+    bucket         = "azzamterraform991"  # Replace with your unique S3 bucket name
+    key            = "vpc/terraform.tfstate"
+    region         = "eu-north-1"
+    dynamodb_table = "azzam991991"  # Replace with your DynamoDB table name
+  }
+}
+
+
+
+------------------------------------------------------------
+# S3 Bucket Configuration for Web Server
+------------------------------------------------------------
+resource "aws_s3_bucket" "webserver_config" {
+  bucket = "webserver-config-bucket"
+  acl    = "private"
+}
+------------------------------------------------------------
+# upload index.html and Ansible Playbook to S3 webserver-config-bucket 
+------------------------------------------------------------
+# Upload index.html to S3 Bucket
+resource "aws_s3_bucket_object" "index_html" {
+  bucket = webserver-config-bucket.bucket
+  key    = "index.html"
+  acl    = "private"
+  source = "home/azzam/terraformproject/index.html"  # Specify the local path to your index.html file
+  content_type = "text/html"          # Adjust content type as needed
+}
+
+# Upload Ansible Playbook to S3 Bucket
+resource "aws_s3_bucket_object" "ansible_playbook" {
+  bucket = webserver-config-bucket.bucket
+  key    = "playbook.yml"
+  acl    = "private"
+  source = "home/azzam/terraformproject/configure_apache.yml"  # Specify the local path to your Ansible playbook file
+  content_type = "text/yaml"            # Adjust content type as needed
+}
+
+
+
+------------------------------------------------------------
 3. Create Web Server Resources Configuration:
 Create a new Terraform file, e.g., 'web-server-resources.tf'.
 Define configurations for S3 bucket, SNS topic, IAM roles, golden AMI, Ansible playbook, and other necessary resources
